@@ -1,5 +1,6 @@
 package com.example.todo.fragments
 
+import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -14,6 +15,8 @@ import com.example.todo.utils.model.ToDoData
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import com.getkeepsafe.taptargetview.TapTarget
+import com.getkeepsafe.taptargetview.TapTargetView
 
 class HomeFragment : Fragment(R.layout.fragment_home),
     TaskAdapter.TaskListener,
@@ -31,6 +34,7 @@ class HomeFragment : Fragment(R.layout.fragment_home),
 
         auth = FirebaseAuth.getInstance()
 
+        // Check if user is logged in
         if (auth.currentUser == null) {
             navigateToLogin()
             return
@@ -42,9 +46,17 @@ class HomeFragment : Fragment(R.layout.fragment_home),
         setupRecyclerView()
         loadTasksFromFirebase()
         setupClicks()
+
+        // Show first-time overlay
+        if (isFirstTimeHome()) {
+            binding.addbtn.post {
+                showAddTodoHint()
+                setFirstTimeFalse()
+            }
+        }
     }
 
-    // 🔹 Disable back button on Home
+    // Disable back button on Home
     private fun disableBackButton() {
         requireActivity().onBackPressedDispatcher.addCallback(
             viewLifecycleOwner,
@@ -56,30 +68,29 @@ class HomeFragment : Fragment(R.layout.fragment_home),
         )
     }
 
-    // 🔹 Show first letter of email
+    // Show first letter of email
     private fun setupUserIcon() {
         val email = auth.currentUser?.email
         val letter = email?.firstOrNull()?.uppercase() ?: "?"
         binding.accountText.text = letter
     }
 
-    // 🔹 Firebase
+    // Initialize Firebase
     private fun initFirebase() {
         val uid = auth.currentUser!!.uid
         databaseRef = FirebaseDatabase.getInstance()
             .reference.child("Tasks").child(uid)
     }
 
-    // 🔹 RecyclerView
+    // Setup RecyclerView
     private fun setupRecyclerView() {
         adapter = TaskAdapter(taskList, this)
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = adapter
     }
 
-    // 🔹 Click listeners
+    // Click listeners
     private fun setupClicks() {
-
         binding.addbtn.setOnClickListener {
             val dialog = AddTodoPopupFragment()
             dialog.setListener(this)
@@ -91,7 +102,7 @@ class HomeFragment : Fragment(R.layout.fragment_home),
         }
     }
 
-    // 🔹 Material Logout Dialog
+    // Material Logout Dialog
     private fun showLogoutDialog() {
         MaterialAlertDialogBuilder(requireContext())
             .setIcon(R.drawable.ic_warning)
@@ -107,7 +118,7 @@ class HomeFragment : Fragment(R.layout.fragment_home),
             .show()
     }
 
-    // 🔹 Navigation with animation
+    // Navigation to SignIn Fragment with animation
     private fun navigateToLogin() {
         findNavController().navigate(
             R.id.action_homeFragment_to_signinFragment,
@@ -120,7 +131,7 @@ class HomeFragment : Fragment(R.layout.fragment_home),
         )
     }
 
-    // 🔹 Read Todos
+    // Load tasks from Firebase
     private fun loadTasksFromFirebase() {
         databaseRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -139,7 +150,7 @@ class HomeFragment : Fragment(R.layout.fragment_home),
         })
     }
 
-    // 🔹 Add / Edit Todo
+    // Add/Edit task callback
     override fun onSaveTask(todo: String, oldTodo: ToDoData?) {
         if (oldTodo == null) {
             databaseRef.push().setValue(
@@ -158,5 +169,35 @@ class HomeFragment : Fragment(R.layout.fragment_home),
         val dialog = AddTodoPopupFragment()
         dialog.setListener(this, todo)
         dialog.show(childFragmentManager, "EditTodo")
+    }
+
+    // SharedPreferences: First-time check
+    private fun isFirstTimeHome(): Boolean {
+        val prefs = requireContext().getSharedPreferences("todo_prefs", Context.MODE_PRIVATE)
+        return prefs.getBoolean("first_time_home", true)
+    }
+
+    private fun setFirstTimeFalse() {
+        val prefs = requireContext().getSharedPreferences("todo_prefs", Context.MODE_PRIVATE)
+        prefs.edit().putBoolean("first_time_home", false).apply()
+    }
+
+    // TapTarget overlay for Add button
+    private fun showAddTodoHint() {
+        TapTargetView.showFor(
+            requireActivity(),
+            TapTarget.forView(
+                binding.addbtn,
+                "Create your first Todo",
+                "Tap here to add a new todo list"
+            )
+                .outerCircleColor(R.color.yellow)
+                .targetCircleColor(android.R.color.white)
+                .textColor(android.R.color.white)
+                .cancelable(false)
+                .drawShadow(true)
+                .tintTarget(true)
+                .transparentTarget(true)
+        )
     }
 }
