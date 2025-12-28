@@ -8,6 +8,7 @@
         <item name="colorSecondary">#1852FD</item>
         <item name="android:statusBarColor">@color/yellow</item>
         <item name="android:windowLightStatusBar">false</item>
+        <item name="colorError">#FA0E0E</item>
     </style>
 
     <style name="Theme.TODO" parent="Base.Theme.TODO" />

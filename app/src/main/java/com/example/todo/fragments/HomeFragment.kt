@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -104,7 +106,7 @@ class HomeFragment : Fragment(R.layout.fragment_home),
 
     // Material Logout Dialog
     private fun showLogoutDialog() {
-        MaterialAlertDialogBuilder(requireContext())
+        val dialog=MaterialAlertDialogBuilder(requireContext())
             .setIcon(R.drawable.ic_warning)
             .setTitle("Logout")
             .setMessage("Are you sure you want to logout?")
@@ -116,6 +118,10 @@ class HomeFragment : Fragment(R.layout.fragment_home),
             }
             .setNegativeButton("Cancel", null)
             .show()
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(requireContext(),
+            com.google.android.material.R.color.design_default_color_error))
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(requireContext(),
+            com.google.android.material.R.color.m3_ref_palette_blue40))
     }
 
     // Navigation to SignIn Fragment with animation

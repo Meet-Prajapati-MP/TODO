@@ -10,7 +10,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#2D00BDF7">
+        android:background="#4B1B62F2">
 
         <ImageView
             android:id="@+id/todoClose"
