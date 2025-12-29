@@ -93,9 +93,6 @@ class HomeFragment : Fragment(R.layout.fragment_home),
             showLogoutDialog()
         }
 
-        binding.emptyImage.setOnClickListener {
-            binding.addbtn.performClick()
-        }
     }
 
     private fun showLogoutDialog() {
